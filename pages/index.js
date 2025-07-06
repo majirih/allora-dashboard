@@ -44,9 +44,19 @@ export default function Home() {
                 {p.model} {p.model === bestModel && '🥇'}
               </h2>
               <p><span className="text-gray-400">Asset:</span> {p.asset}</p>
-              <p><span className="text-gray-400">Predicted:</span> ${Number(p.predicted).toLocaleString()}</p>
-              <p><span className="text-gray-400">Actual:</span> ${Number(p.actual).toLocaleString()}</p>
-              <p><span className="text-gray-400">Accuracy:</span> <span className="font-bold">{p.accuracy}%</span></p>
+              <p>
+  <span className="text-gray-400">Predicted:</span>{' '}
+  ${Number(p.predicted || 0).toLocaleString()}
+</p>
+<p>
+  <span className="text-gray-400">Actual:</span>{' '}
+  ${Number(p.actual || 0).toLocaleString()}
+</p>
+<p>
+  <span className="text-gray-400">Accuracy:</span>{' '}
+  <span className="font-bold">{Number(p.accuracy || 0).toFixed(2)}%</span>
+</p>
+
             </div>
           ))}
         </div>

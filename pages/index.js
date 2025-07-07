@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 export default function Home() {
   const [predictions, setPredictions] = useState([]);
   const [bestModel, setBestModel] = useState(null);
@@ -9,6 +8,12 @@ export default function Home() {
     try {
       const res = await fetch('/api/predictions');
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error('Unexpected API response:', data);
+        return;
+      }
+
       setPredictions(data);
 
       const sorted = [...data].sort((a, b) => parseFloat(b.accuracy) - parseFloat(a.accuracy));
@@ -18,10 +23,9 @@ export default function Home() {
     }
   };
 
-  fetchPredictions(); // Initial fetch
+  fetchPredictions();
 
-  const interval = setInterval(fetchPredictions, 1000 * 60 * 5); // Every 5 minutes
-
+  const interval = setInterval(fetchPredictions, 1000 * 60 * 5); // Every 5 mins
   return () => clearInterval(interval);
 }, []);
 
@@ -33,7 +37,7 @@ export default function Home() {
         <p className="text-center text-gray-400">Loading predictions...</p>
       ) : (
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {predictions.map((p, idx) => (
+          {Array.isArray(predictions) && predictions.map((p, idx) => (
             <div
               key={idx}
               className={`rounded-xl p-5 shadow-lg border ${

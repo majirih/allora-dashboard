@@ -4,9 +4,11 @@ export default async function handler(req, res) {
     console.log("🧠 Starting predictions API...");
 
     const auth = new google.auth.GoogleAuth({
-     credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    });
+  credentials: JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf8')
+  ),
+  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+});
 
     const sheets = google.sheets({ version: 'v4', auth });
 

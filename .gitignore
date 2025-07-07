@@ -42,3 +42,4 @@ next-env.d.ts
 
 google-credentials.json
 
+.env.local

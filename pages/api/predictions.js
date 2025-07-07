@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     console.log("🧠 Starting predictions API...");
 
     const auth = new google.auth.GoogleAuth({
-      credentials: require('../../google-credentials.json'),
+      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 

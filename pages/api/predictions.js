@@ -1,26 +1,30 @@
 import { google } from 'googleapis';
+
 export default async function handler(req, res) {
   try {
-    console.log("🧠 Starting predictions API...");
+    console.log(" Starting Predictions API...");
+
+    // Decode credentials from base64
+    const credentials = JSON.parse(
+      Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8')
+    );
 
     const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(
-    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf8')
-  ),
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
 
     const sheets = google.sheets({ version: 'v4', auth });
 
     const spreadsheetId = process.env.SHEET_ID;
-    const range = 'Daily predictions!A2:F';
+    const range = 'Daily Predictions!A2:F';
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
     });
 
-    console.log("✅ Sheets data fetched:", response.data.values.length, "rows");
+    console.log(" Sheets data fetched:", response.data.values.length, "rows");
 
     const rows = response.data.values;
 
@@ -33,16 +37,15 @@ export default async function handler(req, res) {
     const filtered = rows
       .filter((r) => r[0] === latestDate)
       .map((r) => ({
-        model: r[1],
-        asset: r[2],
-        predicted: r[3],
-        actual: r[4],
-        accuracy: r[5],
+        time: r[0],
+        predicted: parseFloat(r[3]),
+        actual: parseFloat(r[4]),
+        accuracy: parseFloat(r[5]),
       }));
 
     return res.status(200).json(filtered);
   } catch (error) {
-    console.error("❌ Google Sheets error:", error.message);
+    console.error("❌ Google Sheets error:", error);
     return res.status(500).json({ error: 'Failed to fetch predictions' });
   }
 }

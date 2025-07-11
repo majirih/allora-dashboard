@@ -1,70 +1,62 @@
+// /pages/index.js
+
 import { useEffect, useState } from 'react';
+
 export default function Home() {
-  const [predictions, setPredictions] = useState([]);
-  const [bestModel, setBestModel] = useState(null);
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  const fetchPredictions = async () => {
-    try {
-      const res = await fetch('/api/predictions');
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        console.error('Unexpected API response:', data);
-        return;
+  useEffect(() => {
+    const fetchPrediction = async () => {
+      try {
+        const res = await fetch('/api/predictions');
+        const data = await res.json();
+        setPrediction(data);
+      } catch (err) {
+        console.error("❌ Failed to fetch prediction:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setPredictions(data);
-
-      const sorted = [...data].sort((a, b) => parseFloat(b.accuracy) - parseFloat(a.accuracy));
-      setBestModel(sorted[0]?.model);
-    } catch (error) {
-      console.error('Failed to fetch predictions:', error);
-    }
-  };
-
-  fetchPredictions();
-
-  const interval = setInterval(fetchPredictions, 1000 * 60 * 5); // Every 5 mins
-  return () => clearInterval(interval);
-}, []);
+    };
+    fetchPrediction();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">🧠 Allora Model Leaderboard</h1>
+    <main className="min-h-screen bg-gray-900 text-white px-4 py-10 flex flex-col items-center justify-center font-sans">
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-blue-400">
+        🔮 Allora Real-Time BTC Price Forecast
+      </h1>
 
-      {predictions.length === 0 ? (
-        <p className="text-center text-gray-400">Loading predictions...</p>
-      ) : (
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.isArray(predictions) && predictions.map((p, idx) => (
-            <div
-              key={idx}
-              className={`rounded-xl p-5 shadow-lg border ${
-                p.model === bestModel ? 'border-yellow-400 bg-yellow-900/20' : 'border-gray-700 bg-gray-800'
-              }`}
-            >
-              <h2 className="text-xl font-semibold mb-2">
-                {p.model} {p.model === bestModel && '🥇'}
-              </h2>
-              <p><span className="text-gray-400">Asset:</span> {p.asset}</p>
-              <p>
-  <span className="text-gray-400">Predicted:</span>{' '}
-  ${Number(p.predicted || 0).toLocaleString()}
-</p>
-<p>
-  <span className="text-gray-400">Actual:</span>{' '}
-  ${Number(p.actual || 0).toLocaleString()}
-</p>
-<p>
-  <span className="text-gray-400">Accuracy:</span>{' '}
-  <span className="font-bold">{Number(p.accuracy || 0).toFixed(2)}%</span>
-</p>
-
+      {loading ? (
+        <p className="text-gray-400 animate-pulse">Fetching latest prediction...</p>
+      ) : prediction ? (
+        <div className="w-full max-w-md bg-gray-800 rounded-2xl shadow-xl p-6 space-y-4 text-center">
+          <div>
+            <h2 className="text-lg text-gray-400 mb-1">Timestamp</h2>
+            <p className="text-xl font-medium">{prediction.timestamp}</p>
+          </div>
+          <div>
+            <h2 className="text-lg text-gray-400 mb-1">Asset</h2>
+            <p className="text-2xl font-bold text-yellow-300">{prediction.asset}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mt-4 text-sm md:text-base">
+            <div className="bg-gray-700 p-4 rounded-xl">
+              <h3 className="text-gray-300 mb-1">Predicted</h3>
+              <p className="text-green-400 font-semibold">${prediction.predicted}</p>
             </div>
-          ))}
+            <div className="bg-gray-700 p-4 rounded-xl">
+              <h3 className="text-gray-300 mb-1">Actual</h3>
+              <p className="text-red-400 font-semibold">${prediction.actual}</p>
+            </div>
+          </div>
+          <div className="pt-4">
+            <p className="text-gray-400 text-sm">Accuracy</p>
+            <p className="text-2xl font-bold text-purple-300">{prediction.accuracy}%</p>
+          </div>
         </div>
+      ) : (
+        <p className="text-red-500">No prediction data found.</p>
       )}
-    </div>
+    </main>
   );
 }
